@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { ref, set } from "firebase/database";
+import { ref, set, push } from "firebase/database";
 import { db } from "../firebase/firebase";
 import TopNav from "../components/TopNav";
 
 export default function BookRegister() {
-  const [bookId, setBookId] = useState("");
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [message, setMessage] = useState("");
@@ -12,23 +11,24 @@ export default function BookRegister() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!bookId || !title) {
-      setMessage("⚠️ Book ID and Title are required");
+    if (!title) {
+      setMessage("⚠️ Book Title is required");
       return;
     }
 
     try {
-      await set(ref(db, `Books/${bookId}`), {
-        bookId,
+      // Firebase automatically generates unique ID here
+      const newBookRef = push(ref(db, "Books"));
+
+      await set(newBookRef, {
         title,
         author: author || "Unknown",
         status: "AVAILABLE",
         borrowedBy: "",
       });
 
-      setMessage("✅ Book registered successfully!");
+      setMessage(`✅ Book registered successfully! ID: ${newBookRef.key}`);
 
-      setBookId("");
       setTitle("");
       setAuthor("");
     } catch (err) {
@@ -41,52 +41,13 @@ export default function BookRegister() {
     <>
       <TopNav />
 
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#f4f7fc",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "20px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "500px",
-            background: "#fff",
-            padding: "30px",
-            borderRadius: "20px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h2
-            style={{
-              textAlign: "center",
-              marginBottom: "25px",
-              color: "#1e293b",
-            }}
-          >
+      <div style={{ minHeight: "100vh", background: "#f4f7fc", display: "flex", justifyContent: "center", alignItems: "center", padding: "20px" }}>
+        <div style={{ width: "100%", maxWidth: "500px", background: "#fff", padding: "30px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
+          <h2 style={{ textAlign: "center", marginBottom: "25px", color: "#1e293b" }}>
             📚 Register New Book
           </h2>
 
-          <form
-            onSubmit={handleRegister}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "15px",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Book ID (OOP101)"
-              value={bookId}
-              onChange={(e) => setBookId(e.target.value)}
-              style={inputStyle}
-            />
-
+          <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             <input
               type="text"
               placeholder="Book Title"
@@ -114,7 +75,6 @@ export default function BookRegister() {
                 fontSize: "16px",
                 fontWeight: "bold",
                 cursor: "pointer",
-                transition: "0.3s",
               }}
             >
               Register Book
@@ -122,23 +82,7 @@ export default function BookRegister() {
           </form>
 
           {message && (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "12px",
-                borderRadius: "10px",
-                background:
-                  message.includes("success")
-                    ? "#dcfce7"
-                    : "#fee2e2",
-                color:
-                  message.includes("success")
-                    ? "#166534"
-                    : "#991b1b",
-                textAlign: "center",
-                fontWeight: "500",
-              }}
-            >
+            <div style={{ marginTop: "20px", padding: "12px", borderRadius: "10px", textAlign: "center", fontWeight: "500" }}>
               {message}
             </div>
           )}
