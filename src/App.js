@@ -9,26 +9,98 @@ import UserProfile from "./pages/UserProfile";
 
 import AdminGate from "./pages/AdminGate";
 import AdminLogs from "./pages/AdminLogs";
+import Login from "./pages/Login";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ================= DASHBOARD ================= */}
-        <Route path="/" element={<Dashboard />} />
 
-        {/* ================= ADMIN FUNCTIONS ================= */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/register-book" element={<BookRegister />} />
-        <Route path="/books" element={<Books />} />
+        {/* Login Page */}
+        <Route path="/login" element={<Login />} />
 
-        {/* ================= RFID SYSTEM ================= */}
-        <Route path="/scan" element={<Scan />} />
-        <Route path="/user/:uid" element={<UserProfile />} />
+        {/* Dashboard */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* ================= ADMIN LOGS (PROTECTED) ================= */}
-        <Route path="/admin-logs" element={<AdminGate />} />
-        <Route path="/admin-logs/view" element={<AdminLogs />} />
+        {/* User Registration */}
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Book Registration */}
+        <Route
+          path="/register-book"
+          element={
+            <ProtectedRoute>
+              <BookRegister />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Book List */}
+        <Route
+          path="/books"
+          element={
+            <ProtectedRoute>
+              <Books />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* RFID Scan */}
+        <Route
+          path="/scan"
+          element={
+            <ProtectedRoute>
+              <Scan />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* User Profile */}
+        <Route
+          path="/user/:uid"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Gate */}
+        <Route
+          path="/admin-logs"
+          element={
+            <ProtectedRoute>
+              <AdminGate />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Logs */}
+        <Route
+          path="/admin-logs/view"
+          element={
+            <ProtectedRoute>
+              <AdminLogs />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </BrowserRouter>
   );
