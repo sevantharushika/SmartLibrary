@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ref, set, push } from "firebase/database";
-import { db } from "../firebase/firebase";
 import TopNav from "../components/TopNav";
+import { auth, db } from "../firebase/firebase";
 
 export default function BookRegister() {
   const [title, setTitle] = useState("");
@@ -17,7 +17,16 @@ export default function BookRegister() {
     }
 
     try {
-      // Firebase auto generates unique ID
+      // 🔐 AUTH CHECK
+      const user = auth.currentUser;
+
+      console.log("CURRENT USER:", user);
+
+      if (!user) {
+        setMessage("❌ Please login first");
+        return;
+      }
+
       const newBookRef = push(ref(db, "Books"));
 
       await set(newBookRef, {
@@ -26,12 +35,14 @@ export default function BookRegister() {
         status: "AVAILABLE",
         borrowedBy: "",
         createdAt: new Date().toISOString(),
+        createdBy: user.email
       });
 
       setMessage(`✅ Book registered successfully! ID: ${newBookRef.key}`);
 
       setTitle("");
       setAuthor("");
+
     } catch (err) {
       console.error(err);
       setMessage("❌ Error registering book");
@@ -42,36 +53,14 @@ export default function BookRegister() {
     <>
       <TopNav />
 
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#f4f7fc",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "20px",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "500px",
-            background: "#fff",
-            padding: "30px",
-            borderRadius: "20px",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h2 style={{ textAlign: "center", marginBottom: "25px", color: "#1e293b" }}>
-            📚 Register New Book
-          </h2>
+      <div style={pageWrapper}>
+        <div style={card}>
 
-          <form
-            onSubmit={handleRegister}
-            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
-          >
+          <h2 style={titleStyle}>📚 Register New Book</h2>
+
+          <form onSubmit={handleRegister} style={formStyle}>
+
             <input
-              type="text"
               placeholder="Book Title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -79,57 +68,90 @@ export default function BookRegister() {
             />
 
             <input
-              type="text"
               placeholder="Author"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               style={inputStyle}
             />
 
-            <button
-              type="submit"
-              style={{
-                background: "#2563eb",
-                color: "white",
-                border: "none",
-                padding: "14px",
-                borderRadius: "10px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
+            <button type="submit" style={buttonStyle}>
               Register Book
             </button>
+
           </form>
 
           {message && (
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "12px",
-                borderRadius: "10px",
-                textAlign: "center",
-                fontWeight: "500",
-                background: message.includes("✅") ? "#dcfce7" : "#fee2e2",
-                color: message.includes("✅") ? "#166534" : "#991b1b",
-              }}
-            >
+            <div style={{
+              marginTop: "15px",
+              padding: "12px",
+              borderRadius: "10px",
+              textAlign: "center",
+              fontWeight: "500",
+              background: message.includes("✅") ? "#dcfce7" : "#fee2e2",
+              color: message.includes("✅") ? "#166534" : "#991b1b",
+            }}>
               {message}
             </div>
           )}
+
         </div>
       </div>
     </>
   );
 }
 
+/* =========================
+   STYLES
+========================= */
+
+const pageWrapper = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "linear-gradient(135deg, #0f172a, #1e293b)",
+  padding: "20px",
+};
+
+const card = {
+  width: "100%",
+  maxWidth: "420px",
+  background: "#ffffff",
+  padding: "30px",
+  borderRadius: "18px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+};
+
+const titleStyle = {
+  textAlign: "center",
+  marginBottom: "20px",
+  color: "#1e293b",
+  fontSize: "22px",
+  fontWeight: "700",
+};
+
+const formStyle = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+};
+
 const inputStyle = {
-  padding: "14px",
+  padding: "12px 14px",
   borderRadius: "10px",
-  border: "1px solid #d1d5db",
+  border: "1px solid #cbd5e1",
   fontSize: "15px",
   outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
+};
+
+const buttonStyle = {
+  marginTop: "10px",
+  padding: "12px",
+  borderRadius: "10px",
+  border: "none",
+  background: "linear-gradient(90deg, #2563eb, #1d4ed8)",
+  color: "white",
+  fontSize: "16px",
+  fontWeight: "bold",
+  cursor: "pointer",
 };
